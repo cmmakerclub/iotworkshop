@@ -7,15 +7,68 @@
 #include <DHT.h>
 
 #include "CMMC_Blink.hpp"
+#include "CMMC_Interval.hpp"
 CMMC_Blink blinker;
+CMMC_Interval timer001;
 
 const char* ssid     = "ESPERT-3020";
-const char* password = "c";
+const char* password = "espertap";
+
 
 #define APPID       "HelloNETPIE"
-#define KEY         ""
-#define SECRET      ""
+#define KEY         "IIHqbqzgkgy2jkQ"
+#define SECRET      "XQUOQIk4KBLAKCP2gUReixMId"
 #define ALIAS       "plugDIM001"
+
+
+#include <WebSocketsServer.h>
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+
+
+void dim(uint8_t* payload, size_t len) {
+  char tmp[20];
+  memcpy(tmp, payload, len);
+  tmp[len] = '\0';
+
+  String msg2 = String(tmp);
+  int  b = atoi(msg2.c_str());
+  if (b > 254) {
+    b = 254;
+  }
+  if (b < 0) {
+    b = 0;
+  }
+  Wire.beginTransmission(55); // transmit to device #8
+  delay(2);
+  Wire.write((uint8_t)b);              // sends one byte
+  delay(2);
+  Wire.endTransmission();    // stop transmitting
+
+}
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
+  if (type == WStype_TEXT) {
+    Serial.printf("[%u] get Text: %s\n", num, payload);
+
+    dim(payload, lenght);
+
+    // send message to client
+    // webSocket.sendTXT(num, "message here");
+
+    // send data to all connected clients
+    // webSocket.broadcastTXT("message here");
+  }
+  else if (type == WStype_CONNECTED)
+  {
+    IPAddress ip = webSocket.remoteIP(num);
+    Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+
+    // send message to client
+    webSocket.sendTXT(num, "Connected");
+  }
+}
+
 
 WiFiClient client;
 AuthClient *authclient;
@@ -29,38 +82,22 @@ int relayPin = 15; //control relay pin
 
 MicroGear microgear(client);
 
-/* If a new message arrives, do this */
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen) {
   Serial.print("Incoming message --> ");
   msg[msglen] = '\0';
   Serial.println((char *)msg);
   String msg2 = String((char*)msg);
-  int b = atoi(msg2.c_str());
-  if(b>253)
-  b=253;
-  if(b<30)
-   b=30;
-
-  b=253-b;
+  int  b = atoi(msg2.c_str());
+  if (b > 254)
+    b = 254;
+  if (b < 0)
+    b = 0;
   Wire.beginTransmission(55); // transmit to device #8
   //delay(2);
   Wire.write((uint8_t)b);              // sends one byte
   //delay(2);
   Wire.endTransmission();    // stop transmitting
-  //delay(2);
-    Wire.beginTransmission(55); // transmit to device #8
-  //delay(2);
-  Wire.write((uint8_t)b);              // sends one byte
-  //delay(2);
-  Wire.endTransmission();    // stop transmitting
-//  if (msg2 == "ON") {
-//    digitalWrite(relayPin, HIGH);
-//    digitalWrite(LED_BUILTIN, LOW);
-//  }
-//  else if (msg2 == "OFF") {
-//    digitalWrite(relayPin, LOW);
-//    digitalWrite(LED_BUILTIN, HIGH);
-//  }
+
 }
 
 void onFoundgear(char *attribute, uint8_t* msg, unsigned int msglen) {
@@ -121,7 +158,9 @@ void setup() {
     }
   }
 
-
+  Serial.println(WiFi.localIP());
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
 
 
   Serial.println("WiFi connected");
@@ -140,14 +179,13 @@ void setup() {
 }
 
 void loop() {
-  /* To check if the microgear is still connected */
+  /* To check if tevhe microgear is still connected */
+  /* Call this method regularly otherwise the connection may be lost */
+
+  webSocket.loop();
+  microgear.loop();
   if (microgear.connected()) {
-    // Serial.println("connected");
-
-    /* Call this method regularly otherwise the connection may be lost */
-    microgear.loop();
-
-    if (timer >= 2000) {
+    timer001.every_ms(2000, [&]() {
       Serial.print("Publish... ");
       //******  read DHT sensor very 2sec
       float h = 0.00f;
@@ -182,17 +220,11 @@ void loop() {
         microgear.publish(topic_temp, String(t), true);
         microgear.publish(topic_humid, String(h), true);
       }
-      timer = 0;
-    }
-    else timer += 100;
+    });
   }
   else {
-    Serial.println("connection lost, reconnect...");
-    if (timer >= 5000) {
-      microgear.connect(APPID);
-      timer = 0;
-    }
-    else timer += 100;
+    Serial.println("DIS CONNECTED");
+    microgear.connect(APPID);
   }
-  delay(100);
+
 }
