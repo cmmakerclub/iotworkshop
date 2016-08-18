@@ -7,14 +7,16 @@
 
 #include "CMMC_Blink.hpp"
 CMMC_Blink blinker;
+#include "CMMC_Interval.hpp"
 
 const char* ssid     = "ESPERT-3020";
-const char* password = "c";
+const char* password = "espertap";
+
 
 #define APPID       "HelloNETPIE"
-#define KEY         ""
-#define SECRET      ""
-#define ALIAS       "plug001"
+#define KEY         "IIHqbqzgkgy2jkQ"
+#define SECRET      "XQUOQIk4KBLAKCP2gUReixMId"
+#define ALIAS       "light001"
 
 WiFiClient client;
 AuthClient *authclient;
@@ -22,6 +24,7 @@ AuthClient *authclient;
 #define DHTPIN 12
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 DHT dht(DHTPIN, DHTTYPE);
+CMMC_Interval timer001;
 
 int timer = 0;
 int relayPin = 15; //control relay pin
@@ -117,14 +120,9 @@ void setup() {
 }
 
 void loop() {
-  /* To check if the microgear is still connected */
+  microgear.loop();
   if (microgear.connected()) {
-    // Serial.println("connected");
-
-    /* Call this method regularly otherwise the connection may be lost */
-    microgear.loop();
-
-    if (timer >= 2000) {
+    timer001.every_ms(2000, [&]() {
       Serial.print("Publish... ");
       //******  read DHT sensor very 2sec
       float h = 0.00f;
@@ -148,8 +146,8 @@ void loop() {
         Serial.println(" *C ");
 
         /* Chat with the microgear named ALIAS which is myself */
-        //microgear.chat("plug001/temp", (String)t);
-        //microgear.chat("plug001/humid", (String)h);
+        microgear.chat("plug001/temp", (String)t);
+        microgear.chat("plug001/humid", (String)h);
 
         char topic_temp[MAXTOPICSIZE];
         char topic_humid[MAXTOPICSIZE];
@@ -159,19 +157,10 @@ void loop() {
         microgear.publish(topic_temp, String(t), true);
         microgear.publish(topic_humid, String(h), true);
       }
-      timer = 0;
-    }
-    else timer += 100;
+    });
   }
   else {
-    blinker.blink(100);
-    Serial.println("connection lost, reconnect...");
-    if (timer >= 5000) {
-      microgear.connect(APPID);
-      timer = 0;
-      blinker.detach();      
-    }
-    else timer += 100;
+    Serial.println("DIS CONNECTED");
+    microgear.connect(APPID);
   }
-  delay(100);
 }

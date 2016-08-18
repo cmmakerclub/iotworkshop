@@ -7,9 +7,8 @@
 #include <DHT.h>
 
 #include "CMMC_Blink.hpp"
-#include "CMMC_Interval.hpp"
+  
 CMMC_Blink blinker;
-CMMC_Interval timer001;
 
 const char* ssid     = "ESPERT-3020";
 const char* password = "espertap";
