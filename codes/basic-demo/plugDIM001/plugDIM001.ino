@@ -11,12 +11,12 @@
 CMMC_Blink blinker;
 
 const char* ssid     = "ESPERT-3020";
-const char* password = "espertap";
+const char* password = "c";
 
 
 #define APPID       "HelloNETPIE"
 #define KEY         "IIHqbqzgkgy2jkQ"
-#define SECRET      "XQUOQIk4KBLAKCP2gUReixMId"
+#define SECRET      ""
 #define ALIAS       "plugDIM001"
 
 

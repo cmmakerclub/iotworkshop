@@ -10,13 +10,13 @@ CMMC_Blink blinker;
 #include "CMMC_Interval.hpp"
 
 const char* ssid     = "ESPERT-3020";
-const char* password = "espertap";
+const char* password = "c";
 
 
 #define APPID       "HelloNETPIE"
 #define KEY         "IIHqbqzgkgy2jkQ"
-#define SECRET      "XQUOQIk4KBLAKCP2gUReixMId"
-#define ALIAS       "light001"
+#define SECRET      ""
+#define ALIAS       "plug001"
 
 WiFiClient client;
 AuthClient *authclient;
