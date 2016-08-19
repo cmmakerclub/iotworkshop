@@ -15,8 +15,8 @@
 #include "CMMC_Blink.hpp"
 CMMC_Blink blinker;
 
-const char* ssid     = "CMMC-IOT-CAMP-001";  // Change your ssid wifi
-const char* password = "espresso";  // Change your password wifi
+const char* ssid     = "";  // Change your ssid wifi 
+const char* password = "";  // Change your password wifi
 
 // NETPIE.io : lab_device
 #define APPID   ""             // Change your appID

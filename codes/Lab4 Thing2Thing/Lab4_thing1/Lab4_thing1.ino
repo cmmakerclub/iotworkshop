@@ -14,8 +14,8 @@
 #include "CMMC_Blink.hpp"
 CMMC_Blink blinker;
 
-const char* ssid     = "CMMC-IOT-CAMP-001";  // Change your ssid wifi 
-const char* password = "espresso";  // Change your password wifi
+const char* ssid     = "";  // Change your ssid wifi 
+const char* password = "";  // Change your password wifi
 
 // NETPIE.io : lab_device
 #define APPID   ""             // Change your appID
@@ -76,10 +76,10 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
 }
 
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen) {
-Serial.print("Incoming message --> ");
-  msg[msglen] = '\0';
-  Serial.println((char *)msg);
-  String msg2 = String((char*)msg);
+//Serial.print("Incoming message --> ");
+//  msg[msglen] = '\0';
+//  Serial.println((char *)msg);
+//  String msg2 = String((char*)msg);
 }
 
 /******************* initial loop ***********************************/
