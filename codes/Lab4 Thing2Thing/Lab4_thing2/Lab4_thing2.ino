@@ -11,19 +11,20 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <MicroGear.h>  // v 1.1.7
+
 #include "CMMC_Blink.hpp"
 CMMC_Blink blinker;
 
-const char* ssid     = "CMMC-IOT-CAMP-001";  // Change your ssid wifi 
+const char* ssid     = "CMMC-IOT-CAMP-001";  // Change your ssid wifi
 const char* password = "espresso";  // Change your password wifi
 
 // NETPIE.io : lab_device
 #define APPID   ""             // Change your appID
 #define KEY     ""       // Change your Key
 #define SECRET  "" // Change your SECRET
-#define ALIAS   "thing1"              // Change your name
+#define ALIAS   "thing2"              // Change your name
 
-#define BUTTON 0
+#define LED 2
 
 WiFiClient client;
 MicroGear microgear(client);
@@ -41,12 +42,6 @@ void loop() {
   if (microgear.connected())
   {
     microgear.loop();
-
-    if(digitalRead(BUTTON) == LOW)  {
-      microgear.chat("thing2", "ON");  
-      delay(200);
-    }
-    Serial.println(digitalRead(BUTTON));
   }
   else
   {
@@ -77,22 +72,16 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
 
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen) {
   Serial.print("Incoming message --> ");
-  Serial.print(topic);
-  Serial.print(" : ");
+  msg[msglen] = '\0';
+  Serial.println((char *)msg);
+  String msg2 = String((char*)msg);
 
-  char Str_msg[msglen];
-  for (int i = 0; i < msglen; i++)
+  if (msg2 == "ON")
   {
-    Str_msg[i] = (char)msg[i];
-    Serial.print((char)msg[i]);
+    digitalWrite(LED, !digitalRead(LED));
+    delay(100);
+    Serial.println("LED Toggle");
   }
-
-  Serial.println();
-
-  String msgIN = String(Str_msg).substring(0, msglen);
-
-  Serial.print("Topic is ");
-  Serial.println(topic);
 }
 
 /******************* initial loop ***********************************/
@@ -128,6 +117,6 @@ void init_wifi() {
 }
 
 void init_hardware() {
-  pinMode(BUTTON, INPUT);
+  pinMode(LED, OUTPUT);
 }
 
